@@ -1,0 +1,2 @@
+const SCREEN_SMALL = 600;
+const SCREEN_LARGE = 1200;
