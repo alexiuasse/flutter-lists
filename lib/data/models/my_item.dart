@@ -1,11 +1,11 @@
-class Item {
+class MyItem {
   final int id;
   final int listId;
   String name;
   int quantity;
   bool checked;
 
-  Item({
+  MyItem({
     required this.id,
     required this.listId,
     required this.name,

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lists/components/dialogs.dart';
+import 'package:lists/data/bloc/bloc_provider.dart';
+import 'package:lists/screens/list/list_screen.dart';
 
 // Navigator.pushNamed(
 // context,
@@ -15,6 +17,11 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    final bloc = BlocProvider.of(context);
+    final listBloc = bloc?.listBloc;
+    print("Bloc: $bloc, ListBloc: $listBloc, Lists: ${listBloc?.lists}");
+
     return WillPopScope(
       onWillPop: () async {
         final action = await Dialogs.yesAbortDialog(
@@ -22,7 +29,18 @@ class HomeScreen extends StatelessWidget {
         return action == DialogAction.yes;
       },
       child: SafeArea(
-        child: Container(),
+        child: Scaffold(
+          floatingActionButton: FloatingActionButton(
+            child: Icon(Icons.list),
+            onPressed: () {
+              Navigator.pushNamed(
+                context,
+                ListScreen.routeName,
+                arguments: ListScreenArguments(0),
+              );
+            },
+          ),
+        ),
       ),
     );
   }

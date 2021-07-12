@@ -1,9 +1,9 @@
-class List {
+class MyList {
   final int id;
   String title;
   String description;
 
-  List({
+  MyList({
     required this.id,
     required this.title,
     this.description = '',

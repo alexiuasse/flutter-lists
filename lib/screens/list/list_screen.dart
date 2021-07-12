@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:lists/data/bloc/bloc_provider.dart';
+import 'package:lists/data/models/my_list.dart';
 
 //List Screen argument, the id of the list clicked
 class ListScreenArguments {
@@ -15,11 +17,33 @@ class ListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final args = ModalRoute.of(context)!.settings.arguments as
-    ListScreenArguments;
+    final args =
+        ModalRoute.of(context)!.settings.arguments as ListScreenArguments;
 
-    return Center(
-      child: Text(args.id.toString()),
+    var bloc = BlocProvider.of(context)?.listBloc;
+
+    return SafeArea(
+      child: Scaffold(
+        body: Center(
+          child: StreamBuilder<List<MyList>>(
+            stream: bloc?.lists,
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                if (!snapshot.hasError) {
+                  return ListView.builder(
+                    itemCount: snapshot.data?.length,
+                    itemBuilder: (context, index) {
+                      MyList item = snapshot.data![index];
+                      return Text(item.toString());
+                    },
+                  );
+                }
+              }
+              return Container();
+            },
+          )
+        ),
+      ),
     );
   }
 }
