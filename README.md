@@ -1,6 +1,12 @@
 # lists
 
-A Flutter project that create and manage lists of things.
+A Simple Flutter project that create and manage lists.
+
+It uses sqlite to store the lists.
+
+## Check it out
+
+This app is available on the PlayStore just search *Minhas Listas*. For now just a PT-BR version is available.
 
 ## Getting Started
 
