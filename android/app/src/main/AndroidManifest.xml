@@ -1,7 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.br.iuasse.lists.lists">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+
    <application
-        android:label="lists"
+        android:label="Minhas Listas"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"

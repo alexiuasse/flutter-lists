@@ -1,16 +1,16 @@
 class MyItem {
-  final int id;
+  final int? id;
   final int listId;
   String name;
   int quantity;
-  bool checked;
+  int checked;
 
   MyItem({
-    required this.id,
+    this.id,
     required this.listId,
     required this.name,
     this.quantity = 0,
-    this.checked = false,
+    this.checked = 0,
   });
 
   // Convert a Item into a Map. The keys must correspond to the names of the

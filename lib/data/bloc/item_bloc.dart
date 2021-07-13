@@ -9,7 +9,7 @@ class ItemBloc {
 
   final _controller = StreamController<List<MyItem>>.broadcast();
 
-  get lists => _controller.stream;
+  get items => _controller.stream;
 
   dispose() {
     _controller.close();
@@ -17,6 +17,7 @@ class ItemBloc {
 
   setListId(int listId) {
     _listId = listId;
+    getItems();
   }
 
   getItems() async {
@@ -28,7 +29,7 @@ class ItemBloc {
   }
 
   delete(int id) {
-    DBProvider.db.deleteList(id);
+    DBProvider.db.deleteItem(id);
     getItems();
   }
 

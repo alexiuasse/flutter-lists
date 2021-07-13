@@ -26,11 +26,12 @@ class DBProvider {
   }
 
   static _onCreate(Database db, int version) async {
-    String createList = 'CREATE TABLE list(id INTEGER PRIMARY KEY, title TEXT, '
-        'description TEXT)';
+    String createList = 'CREATE TABLE list(id INTEGER PRIMARY KEY '
+        'AUTOINCREMENT, title TEXT, description TEXT)';
     await db.execute(createList);
     print("Creating list table");
-    String createItem = 'CREATE TABLE item(id INTEGER PRIMARY KEY, name TEXT, '
+    String createItem =
+        'CREATE TABLE item(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, '
         'quantity INTEGER, checked INTEGER, listId INTEGER, FOREIGN KEY '
         '(listId) REFERENCES list (id) ON DELETE CASCADE ON UPDATE CASCADE)';
     await db.execute(createItem);

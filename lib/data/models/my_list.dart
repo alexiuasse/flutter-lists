@@ -1,10 +1,10 @@
 class MyList {
-  final int id;
+  final int? id;
   String title;
   String description;
 
   MyList({
-    required this.id,
+    this.id,
     required this.title,
     this.description = '',
   });
