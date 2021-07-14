@@ -4,6 +4,8 @@ import 'package:lists/data/bloc/bloc_provider.dart';
 import 'package:lists/data/bloc/item_bloc.dart';
 import 'package:lists/data/models/my_item.dart';
 import 'package:lists/data/models/my_list.dart';
+import 'package:flutter/services.dart';
+import 'package:lists/screens/home/home_screen.dart';
 
 //List Screen argument, the id of the list clicked
 class ListScreenArguments {
@@ -24,13 +26,14 @@ class ListScreen extends StatefulWidget {
 
 class _ListScreenState extends State<ListScreen> {
   MyList? list;
+  ItemBloc? itemBloc;
 
   @override
   Widget build(BuildContext context) {
     final args =
         ModalRoute.of(context)!.settings.arguments as ListScreenArguments;
     list = args.list;
-    var itemBloc = BlocProvider.of(context)?.itemBloc;
+    itemBloc = BlocProvider.of(context)?.itemBloc;
     itemBloc!.setListId(list!.id!);
 
     return SafeArea(
@@ -39,16 +42,11 @@ class _ListScreenState extends State<ListScreen> {
           title: Text(list!.title),
           actions: [
             IconButton(
-              icon: Icon(Icons.delete),
-              onPressed: () async {
-                final action = await Dialogs.yesAbortDialog(context, "Deletar?",
-                    "Você quer deletar a lista ${list!.title}?");
-                if (action == DialogAction.yes) {
-                  BlocProvider.of(context)?.listBloc!.delete(list!.id!);
-                  Navigator.of(context).pop();
-                }
+              icon: Icon(Icons.more_vert),
+              onPressed: () {
+                _bottomSheet();
               },
-            ),
+            )
           ],
         ),
         body: Column(
@@ -57,13 +55,15 @@ class _ListScreenState extends State<ListScreen> {
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Text(
-                list!.description,
+                list!.description.isNotEmpty
+                    ? list!.description
+                    : "Sem Descrição",
                 style: Theme.of(context).textTheme.subtitle1,
               ),
             ),
             Expanded(
               child: StreamBuilder<List<MyItem>>(
-                stream: itemBloc.items,
+                stream: itemBloc!.items,
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
                     if (!snapshot.hasError) {
@@ -82,7 +82,7 @@ class _ListScreenState extends State<ListScreen> {
                         itemCount: snapshot.data!.length,
                         itemBuilder: (context, index) {
                           MyItem item = snapshot.data![index];
-                          return _buildItem(item, itemBloc);
+                          return _buildItem(item);
                         },
                       );
                     }
@@ -95,19 +95,72 @@ class _ListScreenState extends State<ListScreen> {
         ),
         floatingActionButton: FloatingActionButton(
           child: Icon(Icons.add),
-          onPressed: _newItemDialog,
+          onPressed: () {
+            _itemDialog(null);
+          },
         ),
       ),
     );
   }
 
-  _buildItem(MyItem item, ItemBloc? itemBloc) {
-    return CheckboxListTile(
-      value: item.checked == 1 ? true : false,
+  _bottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _actionDelete(),
+            _actionShare(),
+          ],
+        );
+      },
+    );
+  }
+
+  _actionDelete() {
+    return ListTile(
+      title: const Text("Deletar Lista"),
+      leading: const Icon(Icons.delete),
+      onTap: () async {
+        final action = await Dialogs.yesAbortDialog(
+          context,
+          "Deletar?",
+          "Você quer deletar a lista ${list!.title}?",
+        );
+        if (action == DialogAction.yes) {
+          BlocProvider.of(context)?.listBloc!.delete(list!.id!);
+          Navigator.popUntil(
+            context,
+            ModalRoute.withName(HomeScreen.routeName),
+          );
+        }
+      },
+    );
+  }
+
+  _actionShare() {
+    return ListTile(
+      title: const Text("Copiar Lista"),
+      leading: const Icon(Icons.copy),
+      onTap: () async {
+        String itemsText = await itemBloc!.getItemsAsText();
+        String shareText = "${list!.title} - ${list!.description}\n$itemsText";
+        Clipboard.setData(ClipboardData(text: shareText));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: const Text('Lista copiada para o clipboard!')),
+        );
+        Navigator.pop(context);
+      },
+    );
+  }
+
+  _buildItem(MyItem item) {
+    return ListTile(
       title: Text(item.name),
       subtitle: Text("Quantidade: ${item.quantity}"),
-      secondary: IconButton(
-        icon: Icon(Icons.delete),
+      leading: IconButton(
+        icon: Icon(Icons.delete, color: Colors.red),
         onPressed: () async {
           final action = await Dialogs.yesAbortDialog(
               context, "Deletar?", "Você quer deletar o item ${item.name} ?");
@@ -116,10 +169,16 @@ class _ListScreenState extends State<ListScreen> {
           }
         },
       ),
-      onChanged: (bool? value) {
-        item.checked = value! ? 1 : 0;
-        print(item.checked);
-        itemBloc!.update(item);
+      trailing: Checkbox(
+        value: item.checked == 1 ? true : false,
+        onChanged: (bool? value) {
+          item.checked = value! ? 1 : 0;
+          print(item.checked);
+          itemBloc!.update(item);
+        },
+      ),
+      onTap: () {
+        _itemDialog(item);
       },
     );
   }
@@ -141,9 +200,17 @@ class _ListScreenState extends State<ListScreen> {
     );
   }
 
-  _newItemDialog() async {
+  _itemDialog(MyItem? item) async {
     TextEditingController nameController = TextEditingController();
-    TextEditingController quantController = TextEditingController();
+    TextEditingController quantityController = TextEditingController();
+    String dialogTitle = "Novo Item";
+    if (item != null) {
+      nameController.text = item.name;
+      quantityController.text = item.quantity.toString();
+      dialogTitle = "Editar Item";
+    } else {
+      quantityController.text = "1";
+    }
     await showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -151,11 +218,12 @@ class _ListScreenState extends State<ListScreen> {
           elevation: 24.0,
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(20.0))),
-          title: Text("Novo Item"),
+          title: Text(dialogTitle),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TextFormField(
+              TextField(
+                autofocus: true,
                 controller: nameController,
                 keyboardType: TextInputType.text,
                 decoration: InputDecoration(
@@ -164,8 +232,8 @@ class _ListScreenState extends State<ListScreen> {
                 ),
               ),
               SizedBox(height: 8),
-              TextFormField(
-                controller: quantController,
+              TextField(
+                controller: quantityController,
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
                   labelText: "Quantidade",
@@ -179,12 +247,19 @@ class _ListScreenState extends State<ListScreen> {
               onPressed: () => Navigator.of(context).pop(),
             ),
             TextButton(
-              child: Text("Salvar"),
-              onPressed: () => _saveItem(
-                nameController.text,
-                quantController.text,
-              ),
-            ),
+                child: Text("Salvar"),
+                onPressed: () {
+                  if (item == null) {
+                    _saveItem(
+                      nameController.text,
+                      quantityController.text,
+                    );
+                  } else {
+                    item.name = nameController.text;
+                    item.quantity = int.parse(quantityController.text);
+                    _updateItem(item);
+                  }
+                }),
           ],
         );
       },
@@ -198,6 +273,12 @@ class _ListScreenState extends State<ListScreen> {
       quantity: int.parse(quantity),
       listId: list!.id!,
     ));
+    Navigator.of(context).pop();
+  }
+
+  _updateItem(MyItem item) {
+    final itemBloc = BlocProvider.of(context)?.itemBloc;
+    itemBloc!.update(item);
     Navigator.of(context).pop();
   }
 }

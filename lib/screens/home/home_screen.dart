@@ -8,7 +8,7 @@ import 'package:lists/screens/list/list_screen.dart';
 /// add a new one. When click on a list it goes to a details screen. To
 /// delete or edit a list it must go to details screen.
 class HomeScreen extends StatefulWidget {
-  static String routeName = "/home";
+  static String routeName = "/";
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
@@ -30,43 +30,67 @@ class _HomeScreenState extends State<HomeScreen> {
           appBar: AppBar(
             title: Text("Minhas Listas"),
             actions: [
-              IconButton(onPressed: _newListDialog, icon: Icon(Icons.add))
+              IconButton(
+                onPressed: () {
+                  _listDialog(null);
+                },
+                icon: Icon(Icons.add),
+              )
             ],
           ),
-          body: StreamBuilder<List<MyList>>(
-            stream: listBloc?.lists,
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                if (!snapshot.hasError) {
-                  if (snapshot.data?.length == 0) {
-                    return Center(
-                      child: Container(
-                        child: Text(
-                          "Nenhuma Lista Encontrada",
-                          style: Theme.of(context).textTheme.subtitle1,
-                        ),
-                      ),
-                    );
-                  }
-                  return ListView.separated(
-                    separatorBuilder: (context, index) => Divider(),
-                    itemCount: snapshot.data!.length,
-                    physics: BouncingScrollPhysics(
-                      parent: AlwaysScrollableScrollPhysics(),
-                    ),
-                    itemBuilder: (context, index) {
-                      MyList item = snapshot.data![index];
-                      return _buildList(item);
-                    },
-                  );
-                }
-              }
-              return _buildLoading();
-            },
+          body: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  "Para editar uma lista basta manter pressionado sobre a "
+                  "lista desejada",
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodyText1!
+                      .copyWith(color: Colors.grey),
+                ),
+              ),
+              Expanded(
+                child: StreamBuilder<List<MyList>>(
+                  stream: listBloc?.lists,
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      if (!snapshot.hasError) {
+                        if (snapshot.data?.length == 0) {
+                          return Center(
+                            child: Container(
+                              child: Text(
+                                "Nenhuma Lista Encontrada",
+                                style: Theme.of(context).textTheme.subtitle1,
+                              ),
+                            ),
+                          );
+                        }
+                        return ListView.separated(
+                          separatorBuilder: (context, index) => Divider(),
+                          itemCount: snapshot.data!.length,
+                          physics: BouncingScrollPhysics(
+                            parent: AlwaysScrollableScrollPhysics(),
+                          ),
+                          itemBuilder: (context, index) {
+                            MyList item = snapshot.data![index];
+                            return _buildList(item);
+                          },
+                        );
+                      }
+                    }
+                    return _buildLoading();
+                  },
+                ),
+              ),
+            ],
           ),
           floatingActionButton: FloatingActionButton(
             child: Icon(Icons.add),
-            onPressed: _newListDialog,
+            onPressed: () {
+              _listDialog(null);
+            },
           ),
         ),
       ),
@@ -74,9 +98,13 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   _buildList(MyList list) {
+    String description = "Sem Descrição";
+    if (list.description.isNotEmpty) {
+      description = list.description;
+    }
     return ListTile(
       title: Text(list.title),
-      subtitle: Text(list.description),
+      subtitle: Text(description),
       trailing: Icon(Icons.list),
       onTap: () {
         Navigator.pushNamed(
@@ -84,6 +112,9 @@ class _HomeScreenState extends State<HomeScreen> {
           ListScreen.routeName,
           arguments: ListScreenArguments(list),
         );
+      },
+      onLongPress: () {
+        _listDialog(list);
       },
     );
   }
@@ -105,9 +136,15 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  _newListDialog() {
+  _listDialog(MyList? list) {
     TextEditingController titleController = TextEditingController();
     TextEditingController descController = TextEditingController();
+    String dialogTitle = "Nova Lista";
+    if (list != null) {
+      titleController.text = list.title;
+      descController.text = list.description;
+      dialogTitle = "Editar Lista";
+    }
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -115,11 +152,12 @@ class _HomeScreenState extends State<HomeScreen> {
           elevation: 24.0,
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(20.0))),
-          title: Text("Nova Lista"),
+          title: Text(dialogTitle),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TextFormField(
+              TextField(
+                autofocus: true,
                 controller: titleController,
                 keyboardType: TextInputType.text,
                 decoration: InputDecoration(
@@ -128,7 +166,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               SizedBox(height: 8),
-              TextFormField(
+              TextField(
                 controller: descController,
                 keyboardType: TextInputType.text,
                 decoration: InputDecoration(
@@ -144,10 +182,18 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             TextButton(
               child: Text("Salvar"),
-              onPressed: () => _saveList(
-                titleController.text,
-                descController.text,
-              ),
+              onPressed: () {
+                if (list == null) {
+                  _saveList(
+                    titleController.text,
+                    descController.text,
+                  );
+                } else {
+                  list.title = titleController.text;
+                  list.description = descController.text;
+                  _updateList(list);
+                }
+              },
             ),
           ],
         );
@@ -158,6 +204,12 @@ class _HomeScreenState extends State<HomeScreen> {
   _saveList(title, description) {
     final listBloc = BlocProvider.of(context)?.listBloc;
     listBloc!.add(MyList(title: title, description: description));
+    Navigator.of(context).pop();
+  }
+
+  _updateList(MyList list) {
+    final listBloc = BlocProvider.of(context)?.listBloc;
+    listBloc!.update(list);
     Navigator.of(context).pop();
   }
 }

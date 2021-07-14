@@ -14,9 +14,9 @@ class DBProvider {
   final String _databaseName = "database.db";
 
   Future<Database?> get database async {
-    print("Getting database");
+    // print("Getting database");
     if (_database != null) return _database;
-    print("Database is null, trying to create new.");
+    // print("Database is null, trying to create new.");
     _database = await initDB();
     return _database;
   }
@@ -93,7 +93,7 @@ class DBProvider {
 
   Future<List<MyList>> getAllLists() async {
     final db = await database;
-    print("Database: $db");
+    // print("Database: $db");
     if (db != null) {
       final List<Map<String, dynamic>> maps = await db.query('list');
 

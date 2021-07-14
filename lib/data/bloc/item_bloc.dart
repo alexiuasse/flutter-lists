@@ -28,6 +28,15 @@ class ItemBloc {
     }
   }
 
+  getItemsAsText() async {
+    String text = "";
+    List<MyItem> items = await DBProvider.db.getAllItems(_listId);
+    items.forEach((element) {
+      text += "${element.name} - ${element.quantity}\n";
+    });
+    return text;
+  }
+
   delete(int id) {
     DBProvider.db.deleteItem(id);
     getItems();
