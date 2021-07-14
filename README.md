@@ -6,7 +6,8 @@ It uses sqlite to store the lists.
 
 ## Check it out
 
-This app is available on the PlayStore just search *Minhas Listas*. For now just a PT-BR version is available.
+This app is available on the PlayStore just search *Minhas Listas*. For now just a PT-BR version is available. 
+https://play.google.com/store/apps/details?id=com.br.iuasse.lists.lists
 
 ## Getting Started
 
