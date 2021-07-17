@@ -61,35 +61,55 @@ class _ListScreenState extends State<ListScreen> {
                 style: Theme.of(context).textTheme.subtitle1,
               ),
             ),
-            Expanded(
-              child: StreamBuilder<List<MyItem>>(
-                stream: itemBloc!.items,
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    if (!snapshot.hasError) {
-                      if (snapshot.data!.length == 0) {
-                        return Center(
-                          child: Container(
-                            child: Text(
-                              "Lista Vazia!",
-                              style: Theme.of(context).textTheme.subtitle1,
-                            ),
+            StreamBuilder<List<MyItem>>(
+              stream: itemBloc!.items,
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  if (!snapshot.hasError) {
+                    if (snapshot.data!.length == 0) {
+                      return Center(
+                        child: Container(
+                          child: Text(
+                            "Lista Vazia!",
+                            style: Theme.of(context).textTheme.subtitle1,
                           ),
-                        );
-                      }
-                      return ListView.separated(
-                        separatorBuilder: (context, index) => Divider(),
-                        itemCount: snapshot.data!.length,
-                        itemBuilder: (context, index) {
-                          MyItem item = snapshot.data![index];
-                          return _buildItem(item);
-                        },
+                        ),
                       );
                     }
+                    int totalItems = 0;
+                    snapshot.data!.forEach((element) {
+                      totalItems += element.quantity;
+                    });
+                    return Expanded(
+                      child: Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                Text("Quantidade", textAlign: TextAlign.left),
+                                Text("$totalItems", textAlign: TextAlign.right)
+                              ],
+                            ),
+                          ),
+                          Expanded(
+                            child: ListView.separated(
+                              separatorBuilder: (context, index) => Divider(),
+                              itemCount: snapshot.data!.length,
+                              itemBuilder: (context, index) {
+                                MyItem item = snapshot.data![index];
+                                return _buildItem(item);
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
                   }
-                  return _buildLoading();
-                },
-              ),
+                }
+                return _buildLoading();
+              },
             ),
           ],
         ),

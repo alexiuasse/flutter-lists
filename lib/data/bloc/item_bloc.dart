@@ -28,7 +28,7 @@ class ItemBloc {
     }
   }
 
-  getItemsAsText() async {
+  Future<String> getItemsAsText() async {
     String text = "";
     List<MyItem> items = await DBProvider.db.getAllItems(_listId);
     items.forEach((element) {
