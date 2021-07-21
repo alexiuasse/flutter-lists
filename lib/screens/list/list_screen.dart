@@ -165,7 +165,7 @@ class _ListScreenState extends State<ListScreen> {
       leading: const Icon(Icons.copy),
       onTap: () async {
         String itemsText = await itemBloc!.getItemsAsText();
-        String shareText = "${list!.title} - ${list!.description}\n$itemsText";
+        String shareText = "${list!.title}\n${list!.description}\n$itemsText";
         Clipboard.setData(ClipboardData(text: shareText));
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: const Text('Lista copiada para o clipboard!')),

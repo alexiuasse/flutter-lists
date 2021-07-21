@@ -32,7 +32,7 @@ class ItemBloc {
     String text = "";
     List<MyItem> items = await DBProvider.db.getAllItems(_listId);
     items.forEach((element) {
-      text += "${element.name} - ${element.quantity}\n";
+      text += "${element.quantity}x ${element.name} \n";
     });
     return text;
   }
