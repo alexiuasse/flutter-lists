@@ -4,6 +4,7 @@ class MyItem {
   String name;
   int quantity;
   int checked;
+  double value;
 
   MyItem({
     this.id,
@@ -11,6 +12,7 @@ class MyItem {
     required this.name,
     this.quantity = 0,
     this.checked = 0,
+    this.value = 0.00,
   });
 
   // Convert a Item into a Map. The keys must correspond to the names of the
@@ -22,6 +24,7 @@ class MyItem {
       'name': name,
       'quantity': quantity,
       'checked': checked,
+      'value': value,
     };
   }
 
@@ -30,6 +33,7 @@ class MyItem {
   @override
   String toString() {
     return 'Item{id: $id, listId: $listId, name: $name, quantity: $quantity, '
-        'checked: $checked}';
+        'checked: $checked}'
+        'value: $value';
   }
 }

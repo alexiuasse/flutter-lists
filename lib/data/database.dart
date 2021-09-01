@@ -1,6 +1,8 @@
 import 'dart:async';
+
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
+
 import 'models/my_item.dart';
 import 'models/my_list.dart';
 
@@ -10,7 +12,7 @@ class DBProvider {
   static final DBProvider db = DBProvider._();
 
   Database? _database;
-  final int _databaseVersion = 1;
+  final int _databaseVersion = 2;
   final String _databaseName = "database.db";
 
   Future<Database?> get database async {
@@ -26,17 +28,39 @@ class DBProvider {
   }
 
   static _onCreate(Database db, int version) async {
-    String createList = 'CREATE TABLE list(id INTEGER PRIMARY KEY '
-        'AUTOINCREMENT, title TEXT, description TEXT)';
+    String createList = '''
+      CREATE TABLE list(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT,
+        description TEXT
+      );
+    ''';
     await db.execute(createList);
     print("Creating list table");
-    String createItem =
-        'CREATE TABLE item(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, '
-        'quantity INTEGER, checked INTEGER, listId INTEGER, FOREIGN KEY '
-        '(listId) REFERENCES list (id) ON DELETE CASCADE ON UPDATE CASCADE)';
+    String createItem = '''
+      CREATE TABLE item(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT,
+          quantity INTEGER,
+          checked INTEGER,
+          listId INTEGER,
+          value DEC(10, 2),
+          FOREIGN KEY (listId) REFERENCES list (id) ON DELETE CASCADE ON UPDATE CASCADE
+      );
+    ''';
     await db.execute(createItem);
     print("Creating item table");
     print("Database created");
+  }
+
+  static _onUpgrade(Database db, int oldVersion, int newVersion) {
+    if (oldVersion < newVersion) {
+      print("Updating database from $oldVersion to $newVersion");
+      // you can execute drop table and create table
+      db.execute("ALTER TABLE item ADD COLUMN value DEC(10, 2);");
+    } else {
+      print("No update, everything up to date!");
+    }
   }
 
   initDB() async {
@@ -49,6 +73,8 @@ class DBProvider {
       onCreate: _onCreate,
       // Call on configure database to enable foreign key.
       onConfigure: _onConfigure,
+      // Call on upgrade database
+      onUpgrade: _onUpgrade,
       // Set the version. This executes the onCreate function and provides a
       // path to perform database upgrades and downgrades.
       version: _databaseVersion,
@@ -160,6 +186,7 @@ class DBProvider {
           name: maps[i]['name'],
           quantity: maps[i]['quantity'],
           checked: maps[i]['checked'],
+          value: maps[i]['value'].toDouble(),
         );
       });
     }

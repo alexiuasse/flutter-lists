@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:lists/components/dialogs.dart';
 import 'package:lists/data/bloc/bloc_provider.dart';
 import 'package:lists/data/bloc/item_bloc.dart';
 import 'package:lists/data/models/my_item.dart';
 import 'package:lists/data/models/my_list.dart';
-import 'package:flutter/services.dart';
 import 'package:lists/screens/home/home_screen.dart';
 
 //List Screen argument, the id of the list clicked
@@ -30,8 +30,7 @@ class _ListScreenState extends State<ListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final args =
-        ModalRoute.of(context)!.settings.arguments as ListScreenArguments;
+    final args = ModalRoute.of(context)!.settings.arguments as ListScreenArguments;
     list = args.list;
     itemBloc = BlocProvider.of(context)?.itemBloc;
     itemBloc!.setListId(list!.id!);
@@ -55,9 +54,7 @@ class _ListScreenState extends State<ListScreen> {
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Text(
-                list!.description.isNotEmpty
-                    ? list!.description
-                    : "Sem Descrição",
+                list!.description.isNotEmpty ? list!.description : "Sem Descrição",
                 style: Theme.of(context).textTheme.subtitle1,
               ),
             ),
@@ -77,8 +74,10 @@ class _ListScreenState extends State<ListScreen> {
                       );
                     }
                     int totalItems = 0;
+                    double totalValue = 0;
                     snapshot.data!.forEach((element) {
                       totalItems += element.quantity;
+                      totalValue += element.value * element.quantity;
                     });
                     return Expanded(
                       child: Column(
@@ -88,6 +87,8 @@ class _ListScreenState extends State<ListScreen> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: [
+                                Text("Valor", textAlign: TextAlign.left),
+                                Text("R\$ $totalValue", textAlign: TextAlign.right),
                                 Text("Quantidade", textAlign: TextAlign.left),
                                 Text("$totalItems", textAlign: TextAlign.right)
                               ],
@@ -178,12 +179,18 @@ class _ListScreenState extends State<ListScreen> {
   _buildItem(MyItem item) {
     return ListTile(
       title: Text(item.name),
-      subtitle: Text("Quantidade: ${item.quantity}"),
+      subtitle: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text("Valor: R\$ ${item.value}"),
+          Text("Quantidade: ${item.quantity}"),
+        ],
+      ),
       leading: IconButton(
         icon: Icon(Icons.delete, color: Colors.red),
         onPressed: () async {
-          final action = await Dialogs.yesAbortDialog(
-              context, "Deletar?", "Você quer deletar o item ${item.name} ?");
+          final action = await Dialogs.yesAbortDialog(context, "Deletar?", "Você quer deletar o item ${item.name} ?");
           if (action == DialogAction.yes) {
             itemBloc!.delete(item.id!);
           }
@@ -193,7 +200,6 @@ class _ListScreenState extends State<ListScreen> {
         value: item.checked == 1 ? true : false,
         onChanged: (bool? value) {
           item.checked = value! ? 1 : 0;
-          print(item.checked);
           itemBloc!.update(item);
         },
       ),
@@ -223,21 +229,23 @@ class _ListScreenState extends State<ListScreen> {
   _itemDialog(MyItem? item) async {
     TextEditingController nameController = TextEditingController();
     TextEditingController quantityController = TextEditingController();
+    TextEditingController valueController = TextEditingController();
     String dialogTitle = "Novo Item";
     if (item != null) {
       nameController.text = item.name;
       quantityController.text = item.quantity.toString();
+      valueController.text = item.value.toString();
       dialogTitle = "Editar Item";
     } else {
       quantityController.text = "1";
+      valueController.text = "0";
     }
     await showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           elevation: 24.0,
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(20.0))),
+          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20.0))),
           title: Text(dialogTitle),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -251,7 +259,15 @@ class _ListScreenState extends State<ListScreen> {
                   fillColor: Colors.white,
                 ),
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
+              TextField(
+                controller: valueController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: "Valor",
+                ),
+              ),
+              const SizedBox(height: 8),
               TextField(
                 controller: quantityController,
                 keyboardType: TextInputType.number,
@@ -273,10 +289,12 @@ class _ListScreenState extends State<ListScreen> {
                     _saveItem(
                       nameController.text,
                       quantityController.text,
+                      valueController.text,
                     );
                   } else {
                     item.name = nameController.text;
                     item.quantity = int.parse(quantityController.text);
+                    item.value = double.parse(valueController.text);
                     _updateItem(item);
                   }
                 }),
@@ -286,13 +304,16 @@ class _ListScreenState extends State<ListScreen> {
     );
   }
 
-  _saveItem(name, quantity) {
+  _saveItem(name, quantity, value) {
     final itemBloc = BlocProvider.of(context)?.itemBloc;
-    itemBloc!.add(MyItem(
-      name: name,
-      quantity: int.parse(quantity),
-      listId: list!.id!,
-    ));
+    itemBloc!.add(
+      MyItem(
+        name: name,
+        quantity: int.parse(quantity),
+        value: double.parse(value),
+        listId: list!.id!,
+      ),
+    );
     Navigator.of(context).pop();
   }
 
