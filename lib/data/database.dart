@@ -186,7 +186,7 @@ class DBProvider {
           name: maps[i]['name'],
           quantity: maps[i]['quantity'],
           checked: maps[i]['checked'],
-          value: maps[i]['value'].toDouble(),
+          value: maps[i]['value'] != null ? maps[i]['value'].toDouble() : 0.00,
         );
       });
     }

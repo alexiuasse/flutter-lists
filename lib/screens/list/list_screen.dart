@@ -54,7 +54,7 @@ class _ListScreenState extends State<ListScreen> {
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Text(
-                list!.description.isNotEmpty ? list!.description : "Sem Descrição",
+                list!.description.isNotEmpty ? list!.description : "Lista Sem Descrição",
                 style: Theme.of(context).textTheme.subtitle1,
               ),
             ),
@@ -62,54 +62,60 @@ class _ListScreenState extends State<ListScreen> {
               stream: itemBloc!.items,
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
-                  if (!snapshot.hasError) {
-                    if (snapshot.data!.length == 0) {
-                      return Center(
-                        child: Container(
-                          child: Text(
-                            "Lista Vazia!",
-                            style: Theme.of(context).textTheme.subtitle1,
-                          ),
+                  if (snapshot.data!.length == 0) {
+                    return Center(
+                      child: Container(
+                        child: Text(
+                          "Lista Vazia!",
+                          style: Theme.of(context).textTheme.headline6,
                         ),
-                      );
-                    }
-                    int totalItems = 0;
-                    double totalValue = 0;
-                    snapshot.data!.forEach((element) {
-                      totalItems += element.quantity;
-                      totalValue += element.value * element.quantity;
-                    });
-                    return Expanded(
-                      child: Column(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                Text("Valor", textAlign: TextAlign.left),
-                                Text("R\$ $totalValue", textAlign: TextAlign.right),
-                                Text("Quantidade", textAlign: TextAlign.left),
-                                Text("$totalItems", textAlign: TextAlign.right)
-                              ],
-                            ),
-                          ),
-                          Expanded(
-                            child: ListView.separated(
-                              separatorBuilder: (context, index) => Divider(),
-                              itemCount: snapshot.data!.length,
-                              itemBuilder: (context, index) {
-                                MyItem item = snapshot.data![index];
-                                return _buildItem(item);
-                              },
-                            ),
-                          ),
-                        ],
                       ),
                     );
                   }
+                  int totalItems = 0;
+                  double totalValue = 0;
+                  snapshot.data!.forEach((element) {
+                    totalItems += element.quantity;
+                    totalValue += element.value * element.quantity;
+                  });
+                  return Expanded(
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Text("Valor", textAlign: TextAlign.left),
+                              Text("R\$ $totalValue", textAlign: TextAlign.right),
+                              Text("Quantidade", textAlign: TextAlign.left),
+                              Text("$totalItems", textAlign: TextAlign.right)
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          child: ListView.separated(
+                            separatorBuilder: (context, index) => Divider(),
+                            itemCount: snapshot.data!.length,
+                            itemBuilder: (context, index) {
+                              MyItem item = snapshot.data![index];
+                              return _buildItem(item);
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                } else if (snapshot.hasError) {
+                  return Center(
+                    child: Text(
+                      "Oops, aconteceu um erro ao carregar lista",
+                      style: Theme.of(context).textTheme.headline6,
+                    ),
+                  );
+                } else {
+                  return _buildLoading();
                 }
-                return _buildLoading();
               },
             ),
           ],
@@ -210,19 +216,25 @@ class _ListScreenState extends State<ListScreen> {
   }
 
   _buildLoading() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text(
-          "Carregando Items",
-          style: Theme.of(context).textTheme.subtitle1,
-        ),
-        CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(
-            Theme.of(context).primaryColor,
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(bottom: 16.0),
+            child: Text(
+              "Carregando Items",
+              style: Theme.of(context).textTheme.subtitle1,
+            ),
           ),
-        ),
-      ],
+          CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(
+              Theme.of(context).primaryColor,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -283,21 +295,22 @@ class _ListScreenState extends State<ListScreen> {
               onPressed: () => Navigator.of(context).pop(),
             ),
             TextButton(
-                child: Text("Salvar"),
-                onPressed: () {
-                  if (item == null) {
-                    _saveItem(
-                      nameController.text,
-                      quantityController.text,
-                      valueController.text,
-                    );
-                  } else {
-                    item.name = nameController.text;
-                    item.quantity = int.parse(quantityController.text);
-                    item.value = double.parse(valueController.text);
-                    _updateItem(item);
-                  }
-                }),
+              child: Text("Salvar"),
+              onPressed: () {
+                if (item == null) {
+                  _saveItem(
+                    nameController.text,
+                    quantityController.text,
+                    valueController.text,
+                  );
+                } else {
+                  item.name = nameController.text;
+                  item.quantity = int.parse(quantityController.text);
+                  item.value = double.parse(valueController.text);
+                  _updateItem(item);
+                }
+              },
+            ),
           ],
         );
       },

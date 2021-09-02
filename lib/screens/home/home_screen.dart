@@ -21,8 +21,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return WillPopScope(
       onWillPop: () async {
-        final action = await Dialogs.yesAbortDialog(
-            context, "Sair?", "Você quer sair do aplicativo?");
+        final action = await Dialogs.yesAbortDialog(context, "Sair?", "Você quer sair do aplicativo?");
         return action == DialogAction.yes;
       },
       child: SafeArea(
@@ -45,10 +44,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Text(
                   "Para editar uma lista basta manter pressionado sobre a "
                   "lista desejada",
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyText1!
-                      .copyWith(color: Colors.grey),
+                  style: Theme.of(context).textTheme.bodyText1!.copyWith(color: Colors.grey),
                 ),
               ),
               Expanded(
@@ -62,7 +58,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: Container(
                               child: Text(
                                 "Nenhuma Lista Encontrada",
-                                style: Theme.of(context).textTheme.subtitle1,
+                                style: Theme.of(context).textTheme.headline6,
                               ),
                             ),
                           );
@@ -150,8 +146,7 @@ class _HomeScreenState extends State<HomeScreen> {
       builder: (BuildContext context) {
         return AlertDialog(
           elevation: 24.0,
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(20.0))),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20.0))),
           title: Text(dialogTitle),
           content: Column(
             mainAxisSize: MainAxisSize.min,

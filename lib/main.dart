@@ -1,11 +1,9 @@
-import 'package:flutter/widgets.dart';
-
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lists/data/bloc/item_bloc.dart';
 import 'package:lists/data/bloc/list_bloc.dart';
 import 'package:lists/routes.dart';
-import 'package:lists/screens/home/home_screen.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'data/bloc/bloc_provider.dart';
 
