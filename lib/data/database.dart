@@ -212,4 +212,18 @@ class DBProvider {
     }
     return [];
   }
+
+  Future<List<Map<String, dynamic>>> getAllItemsAsMap(int listId) async {
+    final db = await database;
+    if (db != null) {
+      final List<Map<String, dynamic>> map = await db.query(
+        'item',
+        where: 'listId = ?',
+        whereArgs: [listId],
+      );
+
+      return map;
+    }
+    return [];
+  }
 }

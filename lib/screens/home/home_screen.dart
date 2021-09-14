@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:lists/components/dialogs.dart';
 import 'package:lists/data/bloc/bloc_provider.dart';
@@ -226,7 +228,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     labelText: "Lista",
                     fillColor: Colors.white,
                     helperMaxLines: 2,
-                    helperText: "Cole aqui uma lista que foi gerada pelo aplicativo!",
+                    helperText: "Cole aqui uma lista que foi gerada pelo aplicativo, na ação de compartilhar!",
                   ),
                 ),
               ],
@@ -251,22 +253,24 @@ class _HomeScreenState extends State<HomeScreen> {
     if (list.length > 0) {
       final listBloc = BlocProvider.of(context)?.listBloc;
       final itemBloc = BlocProvider.of(context)?.itemBloc;
-      List<String> listString = list.split("\n");
-      List<String> itemsString = listString.sublist(2, listString.length);
-      listBloc!.add(MyList(title: listString[0], description: listString[1]));
+      Map<String, dynamic> listMap = json.decode(list);
+      listBloc!.add(MyList(title: listMap['title'], description: listMap['description']));
       listBloc.getLatestList().then((listObj) {
         if (listObj != null) {
-          itemsString.forEach((element) {
-            List<String> item = element.split("x");
+          listMap['items'].forEach((item) {
             itemBloc!.add(
               MyItem(
-                name: getWithoutSpaces(item[1]),
-                quantity: int.parse(item[0]),
-                value: 0.0,
+                name: getWithoutSpaces(item['name']),
+                quantity: item['quantity'],
+                checked: item['checked'],
+                value: item['value'].toDouble(),
                 listId: listObj.id!,
               ),
             );
           });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: const Text('Lista criada com sucesso!')),
+          );
         }
         Navigator.of(context).pop();
       });

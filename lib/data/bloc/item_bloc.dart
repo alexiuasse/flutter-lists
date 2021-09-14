@@ -28,13 +28,19 @@ class ItemBloc {
     }
   }
 
-  Future<String> getItemsAsText() async {
+  Future<String> getItemsToCopy() async {
     String text = "";
     List<MyItem> items = await DBProvider.db.getAllItems(_listId);
     items.forEach((element) {
-      text += "${element.quantity}x ${element.name} \n";
+      text += "${element.quantity}x ${element.name}\n";
     });
     return text;
+  }
+
+  Future<List<Map<String, dynamic>>> getItemsToShare() async {
+    List<Map<String, dynamic>> itemsMap = await DBProvider.db.getAllItemsAsMap(_listId);
+    print(itemsMap);
+    return itemsMap;
   }
 
   delete(int id) {

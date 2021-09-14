@@ -11,13 +11,16 @@ class MyList {
 
   // Convert a List into a Map. The keys must correspond to the names of the
   // columns in the database.
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'title': title,
-      'description': description,
-    };
-  }
+  Map<String, dynamic> toMap() => {
+        'id': id,
+        'title': title,
+        'description': description,
+      };
+
+  MyList.fromMap(Map<String, dynamic> map)
+      : id = map['id'],
+        title = map['title'],
+        description = map['description'];
 
   // Implement toString to make it easier to see information about
   // each list when using the print statement.
@@ -25,5 +28,4 @@ class MyList {
   String toString() {
     return 'List{id: $id, title: $title, description: $description}';
   }
-
 }
