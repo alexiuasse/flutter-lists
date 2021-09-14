@@ -260,10 +260,10 @@ class _HomeScreenState extends State<HomeScreen> {
           listMap['items'].forEach((item) {
             itemBloc!.add(
               MyItem(
-                name: getWithoutSpaces(item['name']),
+                name: item['name'],
                 quantity: item['quantity'],
                 checked: item['checked'],
-                value: item['value'].toDouble(),
+                value: item['value'] == null ? 0.0 : item['value'].toDouble(),
                 listId: listObj.id!,
               ),
             );
