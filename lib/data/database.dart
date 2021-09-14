@@ -83,6 +83,26 @@ class DBProvider {
 
   /// List databases actions, insert, update, delete and get all
 
+  Future<MyList?> getLatestList() async {
+    final db = await database;
+    if (db != null) {
+      final List<Map<String, dynamic>> maps = await db.query(
+        'list',
+        orderBy: "id DESC",
+        limit: 1,
+      );
+      List<MyList> list = List.generate(maps.length, (i) {
+        return MyList(
+          id: maps[i]['id'],
+          title: maps[i]['title'],
+          description: maps[i]['description'],
+        );
+      });
+      return list.first;
+    }
+    return null;
+  }
+
   Future<void> insertList(MyList list) async {
     final db = await database;
     if (db != null) {
@@ -189,6 +209,20 @@ class DBProvider {
           value: maps[i]['value'] != null ? maps[i]['value'].toDouble() : 0.00,
         );
       });
+    }
+    return [];
+  }
+
+  Future<List<Map<String, dynamic>>> getAllItemsAsMap(int listId) async {
+    final db = await database;
+    if (db != null) {
+      final List<Map<String, dynamic>> map = await db.query(
+        'item',
+        where: 'listId = ?',
+        whereArgs: [listId],
+      );
+
+      return map;
     }
     return [];
   }

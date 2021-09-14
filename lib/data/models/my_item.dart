@@ -17,16 +17,22 @@ class MyItem {
 
   // Convert a Item into a Map. The keys must correspond to the names of the
   // columns in the database.
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'listId': listId,
-      'name': name,
-      'quantity': quantity,
-      'checked': checked,
-      'value': value,
-    };
-  }
+  Map<String, dynamic> toMap() => {
+        'id': id,
+        'listId': listId,
+        'name': name,
+        'quantity': quantity,
+        'checked': checked,
+        'value': value,
+      };
+
+  MyItem.fromMap(Map<String, dynamic> map)
+      : id = map['id'],
+        listId = map['listId'],
+        name = map['name'],
+        quantity = map['quantity'],
+        checked = map['checked'],
+        value = map['value'];
 
   // Implement toString to make it easier to see information about
   // each item when using the print statement.

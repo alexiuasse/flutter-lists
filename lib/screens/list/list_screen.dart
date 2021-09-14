@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lists/components/dialogs.dart';
@@ -138,6 +140,7 @@ class _ListScreenState extends State<ListScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             _actionDelete(),
+            _actionCopy(),
             _actionShare(),
           ],
         );
@@ -166,16 +169,32 @@ class _ListScreenState extends State<ListScreen> {
     );
   }
 
-  _actionShare() {
+  _actionCopy() {
     return ListTile(
       title: const Text("Copiar Lista"),
       leading: const Icon(Icons.copy),
       onTap: () async {
-        String itemsText = await itemBloc!.getItemsAsText();
+        String itemsText = await itemBloc!.getItemsToCopy();
         String shareText = "${list!.title}\n${list!.description}\n$itemsText";
         Clipboard.setData(ClipboardData(text: shareText));
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: const Text('Lista copiada para o clipboard!')),
+        );
+        Navigator.pop(context);
+      },
+    );
+  }
+
+  _actionShare() {
+    return ListTile(
+      title: const Text("Compartilhar Lista"),
+      leading: const Icon(Icons.share),
+      onTap: () async {
+        List<Map<String, dynamic>> items = await itemBloc!.getItemsToShare();
+        Map<String, dynamic> listMap = {'title': list!.title, 'description': list!.description, 'items': items};
+        Clipboard.setData(ClipboardData(text: json.encode(listMap)));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: const Text('Lista pronta para ser compartilhada, copiada para Clipboard!')),
         );
         Navigator.pop(context);
       },

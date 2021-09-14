@@ -1,8 +1,14 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:lists/components/dialogs.dart';
 import 'package:lists/data/bloc/bloc_provider.dart';
+import 'package:lists/data/bloc/item_bloc.dart';
+import 'package:lists/data/bloc/list_bloc.dart';
+import 'package:lists/data/models/my_item.dart';
 import 'package:lists/data/models/my_list.dart';
 import 'package:lists/screens/list/list_screen.dart';
+import 'package:lists/utils/utils.dart';
 
 /// HomeScreen will show all lists saved and have a floating button that can
 /// add a new one. When click on a list it goes to a details screen. To
@@ -30,11 +36,13 @@ class _HomeScreenState extends State<HomeScreen> {
             title: Text("Minhas Listas"),
             actions: [
               IconButton(
-                onPressed: () {
-                  _listDialog(null);
-                },
+                onPressed: () => _listDialog(null),
                 icon: Icon(Icons.add),
-              )
+              ),
+              IconButton(
+                onPressed: () => _addListFromString(),
+                icon: Icon(Icons.list),
+              ),
             ],
           ),
           body: Column(
@@ -194,6 +202,79 @@ class _HomeScreenState extends State<HomeScreen> {
         );
       },
     );
+  }
+
+  _addListFromString() {
+    TextEditingController listStringController = TextEditingController();
+    String dialogTitle = "Nova Lista";
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          elevation: 24.0,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20.0))),
+          title: Text(dialogTitle),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  autofocus: true,
+                  controller: listStringController,
+                  autocorrect: false,
+                  maxLines: null,
+                  keyboardType: TextInputType.multiline,
+                  decoration: InputDecoration(
+                    labelText: "Lista",
+                    fillColor: Colors.white,
+                    helperMaxLines: 2,
+                    helperText: "Cole aqui uma lista que foi gerada pelo aplicativo, na ação de compartilhar!",
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text("Fechar"),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            TextButton(
+              child: Text("Salvar"),
+              onPressed: () => _createList(listStringController.text),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  _createList(String list) {
+    if (list.length > 0) {
+      final listBloc = BlocProvider.of(context)?.listBloc;
+      final itemBloc = BlocProvider.of(context)?.itemBloc;
+      Map<String, dynamic> listMap = json.decode(list);
+      listBloc!.add(MyList(title: listMap['title'], description: listMap['description']));
+      listBloc.getLatestList().then((listObj) {
+        if (listObj != null) {
+          listMap['items'].forEach((item) {
+            itemBloc!.add(
+              MyItem(
+                name: getWithoutSpaces(item['name']),
+                quantity: item['quantity'],
+                checked: item['checked'],
+                value: item['value'].toDouble(),
+                listId: listObj.id!,
+              ),
+            );
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: const Text('Lista criada com sucesso!')),
+          );
+        }
+        Navigator.of(context).pop();
+      });
+    }
   }
 
   _saveList(title, description) {

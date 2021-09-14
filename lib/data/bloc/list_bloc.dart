@@ -35,4 +35,8 @@ class ListBloc {
     DBProvider.db.insertList(list);
     getLists();
   }
+
+  Future<MyList?> getLatestList() async {
+    return await DBProvider.db.getLatestList();
+  }
 }
