@@ -8,6 +8,7 @@ import 'package:lists/data/bloc/item_bloc.dart';
 import 'package:lists/data/models/my_item.dart';
 import 'package:lists/data/models/my_list.dart';
 import 'package:lists/screens/home/home_screen.dart';
+import 'package:lists/screens/list/search_delegate.dart';
 
 //List Screen argument, the id of the list clicked
 class ListScreenArguments {
@@ -28,6 +29,7 @@ class ListScreen extends StatefulWidget {
 
 class _ListScreenState extends State<ListScreen> {
   MyList? list;
+  List<MyItem>? items;
   ItemBloc? itemBloc;
 
   @override
@@ -43,11 +45,20 @@ class _ListScreenState extends State<ListScreen> {
           title: Text(list!.title),
           actions: [
             IconButton(
+              icon: Icon(Icons.search, color: Colors.white),
+              onPressed: () {
+                showSearch(
+                  context: context,
+                  delegate: MyItemSearchDelegate(items!, itemBloc),
+                );
+              },
+            ),
+            IconButton(
               icon: Icon(Icons.more_vert),
               onPressed: () {
                 _bottomSheet();
               },
-            )
+            ),
           ],
         ),
         body: Column(
@@ -76,6 +87,7 @@ class _ListScreenState extends State<ListScreen> {
                   }
                   int totalItems = 0;
                   double totalValue = 0;
+                  items = snapshot.data;
                   snapshot.data!.forEach((element) {
                     totalItems += element.quantity;
                     totalValue += element.value * element.quantity;
