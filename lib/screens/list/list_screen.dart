@@ -87,11 +87,13 @@ class _ListScreenState extends State<ListScreen> {
                   }
                   int totalItems = 0;
                   double totalValue = 0;
+                  snapshot.data!.sort((a, b) => a.name.toString().compareTo(b.name.toString()));
                   items = snapshot.data;
-                  snapshot.data!.forEach((element) {
-                    totalItems += element.quantity;
-                    totalValue += element.value * element.quantity;
-                  });
+                  snapshot.data!
+                    ..forEach((element) {
+                      totalItems += element.quantity;
+                      totalValue += element.value * element.quantity;
+                    });
                   return Expanded(
                     child: Column(
                       children: [
