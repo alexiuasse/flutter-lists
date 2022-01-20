@@ -20,3 +20,18 @@ git tag -a TAG
 git checkout develop && git merge --no-ff TAG
 git push origin develop master TAG
 ```
+
+## Future development
+
+**Not in sequencial order**
+
+- Develop a custom theme
+- Develop a web version
+- Deploy web version on Firebase Hosting
+- Create a backend project to save user data (probably Django or maybe Firebase?)
+    - Save data as a json
+- Deploy the backend on Heroku
+
+## Contact
+
+For contact send an email to: alexiuasse@gmail.com
