@@ -3,8 +3,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:lists/components/dialogs.dart';
 import 'package:lists/data/bloc/bloc_provider.dart';
-import 'package:lists/data/bloc/item_bloc.dart';
-import 'package:lists/data/bloc/list_bloc.dart';
 import 'package:lists/data/models/my_item.dart';
 import 'package:lists/data/models/my_list.dart';
 import 'package:lists/screens/list/list_screen.dart';
